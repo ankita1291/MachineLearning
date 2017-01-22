@@ -1,0 +1,49 @@
+data = load('mnist_train.csv');
+label = data(:,1);
+image_pix = data(:,2:end);
+eta = 0.001;
+weight = randn(10,784);
+scaled_image_pix = image_pix./255;
+wt_sum= [];
+wt_input =[];
+accuracy_vect =[];
+pred_vals=[];
+for t = 1:70
+    frac = 0;
+    fprintf('epoch---- %d\n',t);
+  for i = 1:60000
+    x = scaled_image_pix(i,:);
+    wt_input = bsxfun(@times,weight,x);
+    wt_sum = sum(wt_input,2);
+    [value,index] = max(wt_sum);
+    pred_vals(i)= index-1;
+   if (index-1 == label(i))
+      % fprintf('pred val, epect val %d %d \n' , index-1, label(i));
+        frac = frac+1;
+      else
+     for j=0:9
+       if (label(i) == j && wt_sum(j+1)>0)
+         weight(j+1,:) = eta.*(1-1)*x+weight(j+1,:);
+       elseif(label(i) == j && wt_sum(j+1)<=0)
+         weight(j+1,:) = eta.*(1-0)*x+weight(j+1,:);
+       elseif( wt_sum(j+1)>0)
+         weight(j+1,:) = eta.*(0-1)*x+weight(j+1,:);
+       else
+            weight(j+1,:) = eta.*(0-0)*x+weight(j+1,:);
+       end
+     end
+    end
+  end
+  disp('.......compute accuracy.......')
+  disp(frac);
+  accuracy_vect(end+1) = (frac/60000)*100;
+  disp(size(accuracy_vect));
+ % for i=1:60000
+   % pred_vals = pred_vals';
+%     avg_loss =  sum(((label-pred_vals').^2)/2);
+%     avg_loss = avg_loss/60000;
+%     disp(avg_loss);
+end
+ plotData(accuracy_vect);
+%end
+
