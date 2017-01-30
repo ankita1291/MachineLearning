@@ -1,0 +1,84 @@
+function MultilayerNeural = multiLayerNeuralNetwok()
+%load the mnist_train and mnist_test csv files
+data = load('/mnist_train.csv');
+%test = load('mnist_test.csv');
+%get the vector containing the actual label for the training examples in
+%both training and test csv files
+actualValue = data(:,1);
+%actualValueForTest = test(:,1);
+noOfEx = length(actualValue);
+%get the matrix containing the image pixel values of the training example
+image_pix = [ones(noOfEx,1),data(:,2:end)];
+%create a vector for different learning rates
+eta = [0.01;0.01;0.1];
+%scale the image pixels
+scaled_image_pix = image_pix./255;
+%p = [ones(10000,1),test(:,2:end)]./255;
+pred_vals=[];
+frac = 0;
+last_ep=[];
+hidden_layer = [];
+%initialize values
+accuracy_vect = [];
+accuracy_vect_test = [];
+last_ep = [];
+wt_sum= [];
+wt_input =[];
+%create a weight vector for each of the 10 possible output class
+weight = rand(20,785).*1 - 0.5;
+error_output_unit(noOfEx, 10) = ones();
+error_hidden_unit(noOfEx, 50) = ones;
+
+wt_hidden_output = rand(50, 10);
+wt_input_hidden = rand(785, 50);
+momentum = 0.9;
+%
+% hidden_layer = scaled_image_pix * wt_input_hidden;
+% activation_hidden = 1./(1+exp(-hidden_layer));
+% hidden_nodes_to_output =  activation_hidden*wt_hidden_output;
+% activations_output = 1./(1+exp(-hidden_nodes_to_output));
+% [value_predicted, index_of_predicted] = max(activations_output,[], 2);
+for epoch = 1:50
+    fraction = 0;
+%     hidden_layer = scaled_image_pix * wt_input_hidden;
+%     activation_hidden = 1./(1+exp(-hidden_layer));
+%     hidden_nodes_to_output =  activation_hidden*wt_hidden_output;
+%     activations_output = 1./(1+exp(-hidden_nodes_to_output));
+%     [value_predicted, index_of_predicted] = max(activations_output,[], 2);
+    wt_past_hidden_output =[];
+    wt_past_input_hidden = [];
+    for i= 1:60000
+        trainset = scaled_image_pix(i,:);
+        hidden_layer = trainset*wt_input_hidden;%row vector of activations
+        activation_hidden = 1./(1+exp(-hidden_layer));%row vector of activations
+        hidden_nodes_to_output =  activation_hidden*wt_hidden_output;
+        activations_output = 1./(1+exp(-hidden_nodes_to_output));
+        [value_predicted, index_of_predicted] = max(activations_output);
+        
+        if(actualValue(i) == index_of_predicted-1)
+            fraction = fraction+1;
+        end
+        error_output_unit = activations_output .* (1 - activations_output).*(0.1 - activations_output);
+        error_output_unit(index_of_predicted) = activations_output(index_of_predicted).*(1-activations_output(index_of_predicted)).*(0.9 - activations_output(index_of_predicted));
+        s = sum(bsxfun(@times, wt_hidden_output, error_output_unit),2);
+        error_hidden_unit = activation_hidden .*(1 - activation_hidden).*s'; 
+        if i == 1
+            wt_hidden_output = wt_hidden_output + eta(1).*bsxfun(@times, error_output_unit, activation_hidden');
+            wt_past_hidden_output = wt_hidden_output;
+        else
+            wt_hidden_output = wt_hidden_output + eta(1).*bsxfun(@times,error_output_unit, activation_hidden') + momentum.*wt_past_hidden_output;
+            wt_past_hidden_output = wt_hidden_output;
+        end
+        if i == 1
+            %wt_input_hidden = wt_input_hidden + eta(1).*bsxfun(@times, error_hidden_unit, scaled_image_pix');
+            wt_input_hidden = wt_input_hidden + eta(1).*bsxfun(@times,error_hidden_unit , trainset');
+            wt_past_input_hidden = wt_input_hidden;
+        else
+           % wt_input_hidden = wt_input_hidden + eta(1).*bsxfun(@times, error_hidden_unit, scaled_image_pix')+ momentum*eta(1).*bsxfun(error_hidden_unit(i-1,:), scaled_image_pix(i-1, :)');
+            wt_input_hidden = wt_input_hidden + eta(1).*bsxfun(@times,error_hidden_unit, trainset')+ momentum.*wt_past_input_hidden;
+            wt_past_input_hidden = wt_input_hidden;
+        end
+    end
+    accuracy_train = (fraction/60000)*100;
+    disp(accuracy_train);
+end
