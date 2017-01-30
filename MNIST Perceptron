@@ -1,3 +1,4 @@
+function accuracy = perceptron()
 data = load('mnist_train.csv');
 label = data(:,1);
 image_pix = data(:,2:end);
@@ -46,4 +47,4 @@ for t = 1:70
 end
  plotData(accuracy_vect);
 %end
-
+accuracy = accuray_vect;
