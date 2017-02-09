@@ -1,3 +1,0 @@
-function plotval = plotData(accuracy_vector)
-x = (1:5);
-plot(x,accuracy_vector');
