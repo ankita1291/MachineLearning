@@ -1,0 +1,9 @@
+function u = logistic_regression(training_data, test_data )
+test_label = test_data(:, end);
+training_label = training_data(:,end);
+training_data = training_data(:, 1:57);
+mdl = fitglm(training_data, training_label);
+test_data = test_data(:, 1:57);
+y = predict(mdl, test_data);
+predictions = bsxfun(@gt, y, 0.39);
+u = predictions;
