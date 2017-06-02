@@ -1,3 +1,3 @@
 # MachineLearning
-This repo contains code to train a single layer perceptron to recognize handwritten digits.
+This repo contains code for Machine learning class CS-545
 
